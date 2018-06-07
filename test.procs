@@ -1,0 +1,31 @@
+
+.processor  test 8 256 1000
+.code
+PUSH0I8 I 10000
+#S
+
+PUSH0I8 I 1
+;PUSH08 1:0
+OPADDI
+#abc
+JUMP #S
+.processor test1 8 512 1024
+.code
+PUSH0I8 I 345
+#START
+JUMP #abc
+PUSH0I8 I 1
+OPIMULI
+#abc
+JUMP #START
+.instance i1 test R
+.instance i2 test1 S
+.instance i3 test S
+.instance i4 test S
+.mutex m1 1000
+.mutex m2 1000
+.mutex m3 1000
+.mutex m4 1000
+.mutex m5 1000
+.constraint i1 i2,i3,i4
+.connection i1 255 m1
