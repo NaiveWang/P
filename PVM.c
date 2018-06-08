@@ -388,7 +388,7 @@ void debugVM(PBase *p,int howManyStack0Elem)
   printf("ProcessorID:%lu/%d ",(unsigned long)p,p->performance);
   printf("Next Instruction P:%lx No:%hu\n",(long)p->pc,*(unsigned short*)p->pc);
   printf("Current Status:%x ",p->status);
-  printf("Current Flag:%x ",p->eflag);
+  printf("Current Flag:%x ",(p->eflag>>8) & 0xFF);
   printf("datapointer : %lx \n",(long)(p->data));
   printf("Jumping val(maybe)%ld\n",*(long*)(p->pc+2));
   //printf("self0pointer:%lx \n",*(long*)(p->data));
@@ -645,7 +645,11 @@ void *execNormal(void *initPointer)
           {
             case PROCESSOR_STATUS_RUNNING:
               //execution
+              printf("$$$$$$$$$$$%d\n",instanceMountingList->list->instance->status);
               executionOneStep(instanceMountingList->list->instance);
+              debugVM(instanceMountingList->list->instance,1);
+              printf("???????????%d\n",instanceMountingList->list->instance->status);
+              getchar();
               if(a0==0)
               {
                 if(instanceMountingList->list->instance->performance<MAX_PERFORMANCE_VAL)
@@ -688,10 +692,12 @@ void *execNormal(void *initPointer)
             //loop, search each "next instance"
             for(a0=0;a0<instanceMountingList->list->instance->triggerNum;a0++)
             {
+              printf("awaking.............%ld\n",instanceMountingList->list->instance);
               if(listInstance[instanceMountingList->list->instance->triggerList[a0]].status == PROCESSOR_STATUS_SUSPENDED)
               {
                 //suspended & was the chosen one
                 //here is the mutex section
+                //
                 pthread_mutex_lock(&triggerLock);
                 listInstance[instanceMountingList->list->instance->triggerList[a0]].status = PROCESSOR_STATUS_RUNNING;
                 pthread_mutex_unlock(&triggerLock);
@@ -1020,7 +1026,7 @@ void graphDrawInstance(int id)
   glColor3f(1.0f,
     1.0-((float)listInstance[id].performance/(float)MAX_PERFORMANCE_VAL),
     1.0-((float)listInstance[id].performance/(float)MAX_PERFORMANCE_VAL));
-  printf("$%f$\n",(listInstance[id].performance/(float)MAX_PERFORMANCE_VAL));
+  //printf("$%f$\n",(listInstance[id].performance/(float)MAX_PERFORMANCE_VAL));
   dot_size = graph_size/40;
   glBegin(GL_QUADS);
   glVertex2f(gpp[id].x,gpp[id].y);

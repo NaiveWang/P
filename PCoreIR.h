@@ -57,6 +57,7 @@ void CALL(PBase *p);//2decode+8offset=10,push pc
 void RETN(PBase *p);//2decode=2:recover pc
 void JUMP(PBase *p);//2decode+8offset=10
 void JMPC(PBase *p);//2decode+4mask+8offset=14
+void JMPN(PBase *p);//2decode+4mask+8offset=14
 /** Operation **/
 void OPADDB(PBase *p);//2
 void OPADDI(PBase *p);//2decode=2

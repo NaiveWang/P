@@ -31,6 +31,7 @@ void REBOOT(PBase *p)
   *(void**)(p->data + POINTER_STACK0) = *(void**)(p->data +BASE_STACK0);
   *(void**)(p->data + POINTER_STACK) = *(void**)(p->data +BASE_STACK);
   p->status = PROCESSOR_STATUS_SUSPENDED;
+  printf("\t\trebooted\n");
 }
 void MUTW(PBase *p)
 {
@@ -500,14 +501,41 @@ void JUMP(PBase *p)
 void JMPC(PBase *p)
 {
   //get flag
-  asm("movl %0,%%eax"::"r"(p->eflag));
+  asm("movl %0,%%edx"::"r"(p->eflag));
   //get mask
   asm("movq %0,%%rbx"::"r"(p->pc));
   asm("movl 2(%rbx),%ecx");
   //and flag
-  asm("andl %ecx,%eax");
+  //asm("movl %%edx,%0":"=r"(p->debugBuffer));
+  asm("andl %ecx,%edx");
   //zf:
-  asm("jz nojump");
+
+  asm("jz njump");//printf("$$$$$$$$$$$$$$$$$$$$\n");
+  //jump, get val
+  asm("movq 6(%rbx),%rax");
+  asm("addq %rax,%rbx");//add offset
+  asm("movq %%rbx,%0":"=r"(p->pc));
+  //return;
+  asm("jmp jp");
+  asm("njump:");
+  p->pc+=14;
+  asm("jp:");
+  //printf("\t\t\t###%X\n",p->debugBuffer);
+  //get pc
+}
+void JMPN(PBase *p)
+{
+  //get flag
+  asm("movl %0,%%edx"::"r"(p->eflag));
+  //get mask
+  asm("movq %0,%%rbx"::"r"(p->pc));
+  asm("movl 2(%rbx),%ecx");
+  //and flag
+  asm("movl %%edx,%0":"=r"(p->debugBuffer));
+  asm("andl %ecx,%edx");
+  //zf:
+
+  asm("jnz nojump");//printf("$$$$$$$$$$$$$$$$$$$$\n");
   //jump, get val
   asm("movq 6(%rbx),%rax");
   asm("addq %rax,%rbx");//add offset
@@ -517,6 +545,7 @@ void JMPC(PBase *p)
   asm("nojump:");
   p->pc+=14;
   asm("jump:");
+  printf("\t\t\t###%X\n",p->debugBuffer);
   //get pc
 }
 void OPADDB(PBase *p)
@@ -1058,7 +1087,7 @@ void (*InstructionSet[])(PBase *p) = {
   PUSH1,POP1,PUSH8,POP8,
   CBI,CIBI,CIB,CRI,CIR,
   ALLO,FREE,
-  CALL,RETN,JUMP,JMPC,
+  CALL,RETN,JUMP,JMPC,JMPN,
   OPADDB,OPADDI,OPADDR,OPSUBB,OPSUBI,OPSUBR,
   OPMULB,OPMULI,OPMULR,OPIMULB,OPIMULI,OPIMULR,
   OPDIVB,OPDIVI,OPDIVR,OPIDIVB,OPIDIVI,OPIDIVR,
@@ -1078,7 +1107,7 @@ IR pir[]={
   {7,"PUSH1"},{7,"POP1"},{7,"PUSH8"},{7,"POP8"},
   {2,"CBI"},{2,"CIBI"},{2,"CIB"},{2,"CRI"},{2,"CIR"},
   {2,"ALLO"},{2,"FREE"},
-  {10,"CALL"},{2,"RETN"},{10,"JUMP"},{14,"JMPC"},
+  {10,"CALL"},{2,"RETN"},{10,"JUMP"},{14,"JMPC"},{14,"JMPN"},
   {2,"OPADDB"},{2,"OPADDI"},{2,"OPADDR"},
   {2,"OPSUBB"},{2,"OPSUBI"},{2,"OPSUBR"},
   {2,"OPMULB"},{2,"OPMULI"},{2,"OPMULR"},{2,"OPIMULB"},{2,"OPIMULI"},{2,"OPIMULR"},
