@@ -1,7 +1,7 @@
 
 .processor  test 8 256 1000
 .code
-PUSH0I8 I 3
+PUSH0I8 I 40000000
 #S
 
 ;PUSH08 1:0
@@ -15,18 +15,15 @@ PUSH0I8 I 345
 JUMP #abc
 PUSH0I8 I 1
 OPIMULI
-SUSPEND
 #abc
 JUMP #START
 .instance i1 test R
-.instance i2 test1 S
 .instance i3 test S
-.instance i4 test S
 .mutex m1 1000
 .mutex m2 1000
 .mutex m3 1000
 .mutex m4 1000
 .mutex m5 1000
-.constraint i1 i2,i3,i4
+.constraint i1 i3
 .constraint i3 i1
 .connection i1 255 m1

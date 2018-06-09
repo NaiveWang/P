@@ -31,7 +31,7 @@ void REBOOT(PBase *p)
   *(void**)(p->data + POINTER_STACK0) = *(void**)(p->data +BASE_STACK0);
   *(void**)(p->data + POINTER_STACK) = *(void**)(p->data +BASE_STACK);
   p->status = PROCESSOR_STATUS_SUSPENDED;
-  printf("\t\trebooted\n");
+  //printf("\t\trebooted\n");
 }
 void MUTW(PBase *p)
 {
@@ -531,7 +531,7 @@ void JMPN(PBase *p)
   asm("movq %0,%%rbx"::"r"(p->pc));
   asm("movl 2(%rbx),%ecx");
   //and flag
-  asm("movl %%edx,%0":"=r"(p->debugBuffer));
+  //asm("movl %%edx,%0":"=r"(p->debugBuffer));
   asm("andl %ecx,%edx");
   //zf:
 
@@ -545,7 +545,7 @@ void JMPN(PBase *p)
   asm("nojump:");
   p->pc+=14;
   asm("jump:");
-  printf("\t\t\t###%X\n",p->debugBuffer);
+  //printf("\t\t\t###%X\n",p->debugBuffer);
   //get pc
 }
 void OPADDB(PBase *p)

@@ -16,7 +16,7 @@
 #include "PFile.h"
 #include "PVMAPILib.h"
 //<<<<<<< Updated upstream
-#define NUM_E_THREAD 1
+#define NUM_E_THREAD 2
 //#define M_WAITING_LIST_SIZE 256
 //#define NUM_E_THREAD 2
 //#define M_WAITING_LIST_SIZE 256
@@ -30,7 +30,7 @@
 //graph global
 #define GRAPH_WINDOW_L 600
 #define GRAPH_WINDOW_H 400
-#define GRAPH_SLEEPING_TIME 250000
+#define GRAPH_SLEEPING_TIME 50000
 /** MACRO Section **/
 //the number of execution threads, it mainly depends on the hardware
 //#define TN_EXE 3//my computer has 8 logical core, extended by the technology known as intel's hyper threading.

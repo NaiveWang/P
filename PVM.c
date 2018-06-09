@@ -645,11 +645,11 @@ void *execNormal(void *initPointer)
           {
             case PROCESSOR_STATUS_RUNNING:
               //execution
-              printf("$$$$$$$$$$$%d\n",instanceMountingList->list->instance->status);
+              //printf("$$$$$$$$$$$%d\n",instanceMountingList->list->instance->status);
               executionOneStep(instanceMountingList->list->instance);
-              debugVM(instanceMountingList->list->instance,1);
-              printf("???????????%d\n",instanceMountingList->list->instance->status);
-              getchar();
+              //debugVM(instanceMountingList->list->instance,1);
+              //printf("???????????%d\n",instanceMountingList->list->instance->status);
+              //getchar();
               if(a0==0)
               {
                 if(instanceMountingList->list->instance->performance<MAX_PERFORMANCE_VAL)
@@ -692,7 +692,7 @@ void *execNormal(void *initPointer)
             //loop, search each "next instance"
             for(a0=0;a0<instanceMountingList->list->instance->triggerNum;a0++)
             {
-              printf("awaking.............%ld\n",instanceMountingList->list->instance);
+              //printf("awaking.............%ld\n",instanceMountingList->list->instance);
               if(listInstance[instanceMountingList->list->instance->triggerList[a0]].status == PROCESSOR_STATUS_SUSPENDED)
               {
                 //suspended & was the chosen one
@@ -742,9 +742,9 @@ void *execNormal(void *initPointer)
             break;
             default:;//error handler
         }
+        instanceMountingList->list = instanceMountingList->list->next;
       }
       //move to next instance
-      instanceMountingList->list = instanceMountingList->list->next;
       //check the counter if all of the instance are slept
       if(idleCounter==instanceMountingList->INumber)
       {
@@ -1047,7 +1047,7 @@ void graphDisp()
     {
       //draw each dot
       graphDrawInstance(a0);
-      //printf("%d/%d\n",a0,listInstance[a0].performance);
+      printf("%d/%d\n",a0,listInstance[a0].performance);
     }
     glFlush();
   }
@@ -1063,7 +1063,7 @@ void *graphMonitor()
   int n,a0;
   glutInitDisplayMode(GLUT_SINGLE|GLUT_RGB);
   glutInitWindowSize(GRAPH_WINDOW_L,GRAPH_WINDOW_H);
-  glutCreateWindow("PVM Monitor");
+  glutCreateWindow("Cell VM Monitor");
   //initialize the postion list
   //initialize data
   gpp = malloc(listInstanceSize * sizeof(gPos));
