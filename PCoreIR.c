@@ -31,6 +31,7 @@ void REBOOT(PBase *p)
   *(void**)(p->data + POINTER_STACK0) = *(void**)(p->data +BASE_STACK0);
   *(void**)(p->data + POINTER_STACK) = *(void**)(p->data +BASE_STACK);
   p->status = PROCESSOR_STATUS_SUSPENDED;
+  p->cycles++;
   //printf("\t\trebooted\n");
 }
 void MUTW(PBase *p)

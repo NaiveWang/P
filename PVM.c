@@ -266,6 +266,7 @@ void VMReadFile(char *file)
     listInstance[c0].eflag = 0;
     listInstance[c0].triggerVal=0;
     listInstance[c0].currentVal=0;
+    listInstance[c0].cycles=0;
     listInstance[c0].performance=INITIAL_PERFORMANCE_VAL;
     //allocate data space!
     listInstance[c0].data=malloc(
@@ -1079,4 +1080,9 @@ void *graphMonitor()
   glutDisplayFunc(graphDisp);
   glutMainLoop();
   //}
+}
+void *performanceCounter()
+{
+  //testing function thread
+  //set up
 }

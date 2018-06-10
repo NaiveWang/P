@@ -109,6 +109,7 @@ pthread_t haltT;
 pthread_t mutexT;
 pthread_t executionThread[NUM_E_THREAD];
 pthread_t graphT;
+pthread_t testingT;
 IME executionGroup[NUM_E_THREAD];
 //global variables
 tgr *triggerList;
@@ -139,4 +140,5 @@ void graphDisp();
 void *graphMonitor();
 void handlerSegFault(int);
 void releaseMemory();
+void *performanceCounter();
 #endif

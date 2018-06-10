@@ -19,8 +19,9 @@ int main(int argc,char **argv)
   printf("dispatching finished\n");
   //mutexTinit();
   printf("mutex finished\n");
-  graphStartUp(&argc,argv);
-  pthread_create(&graphT,NULL,graphMonitor,NULL);
+  //graphStartUp(&argc,argv);
+  //pthread_create(&graphT,NULL,graphMonitor,NULL);
+  
   VMStartUp();
   return 0;
 }
