@@ -306,6 +306,7 @@ void parseProcessorCode()
         inputBufferPointer++;
         //record name and offset
         strCopy(inputBufferPointer+inputBuffer,identifierBuffer);
+        //printf("$%s$\n",identifierBuffer);
         for(a2=0;a2<PNLpointer;a2++)
         {
           if(strcmp(PNL[a2].name,identifierBuffer)) continue;
@@ -455,6 +456,7 @@ void parseProcessorCode()
             strCopy(inputBuffer+inputBufferPointer,identifierBuffer);
             for(a2=0;a2<PNLpointer;a2++)
             {
+              //printf("#%s#%s#\n",identifierBuffer,PNL[a2].name);
               if(!strcmp(identifierBuffer,PNL[a2].name))
               {//match
                 *(long*)(pe->processorTemplates[pListNum-1].code+a1+6)=(long)(PNL[a2].ofst-a1);
@@ -462,6 +464,9 @@ void parseProcessorCode()
                   //*(long*)(pe->processorTemplates[pListNum-1].code+a1+2)+=a0;
                 break;
               }
+            }
+            if(a2==PNLpointer)
+            {
               errno=18;
               return;
             }
