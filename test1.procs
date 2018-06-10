@@ -1,0 +1,14 @@
+.processor  test 8 256 1000
+.code
+PUSH0I8 I 1000000
+#S
+
+;PUSH08 1:0
+OPDECI
+JMPN 16384 S
+REBOOT
+.instance i1 test R
+.instance i2 test S
+
+.constraint i1 i2
+.constraint i2 i1

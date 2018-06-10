@@ -878,6 +878,15 @@ void VMStartUp()
   int a0;
   //check each thread dispatcher,
   //create the thread which has non-zero list
+  //halt handller
+  pthread_mutex_init(&haltExecLock,NULL);
+  pthread_mutex_lock(&haltExecLock);
+  pthread_mutex_init(&triggerLock,NULL);
+  pthread_mutex_init(&rtLock,NULL);
+  pthread_mutex_init(&rtExecLock,NULL);
+  pthread_mutex_lock(&rtExecLock);
+  pthread_create(&haltT,NULL,VMHalt,NULL);
+  pthread_create(&mutexT,NULL,mutexHandler,NULL);
   for(a0=0;a0<NUM_E_THREAD;a0++)
   {
     //check each group
@@ -888,16 +897,10 @@ void VMStartUp()
       pthread_create(&executionThread[a0],NULL,execNormal,&executionGroup[a0]);
     }
   }
-  //halt handller
-  pthread_mutex_init(&haltExecLock,NULL);
-  pthread_mutex_lock(&haltExecLock);
-  pthread_mutex_init(&triggerLock,NULL);
-  pthread_mutex_init(&rtLock,NULL);
-  pthread_mutex_init(&rtExecLock,NULL);
-  pthread_mutex_lock(&rtExecLock);
-  pthread_create(&haltT,NULL,VMHalt,NULL);
-  pthread_create(&mutexT,NULL,mutexHandler,NULL);
+  pthread_create(&testingT,NULL,performanceCounter,NULL);
   pthread_join(haltT,NULL);
+  printf("halted.\n");
+  pthread_join(testingT,NULL);
 }
 void *VMHalt()
 {
@@ -1083,6 +1086,20 @@ void *graphMonitor()
 }
 void *performanceCounter()
 {
+  int a0,a1;
   //testing function thread
   //set up
+  usleep(TESTING_TIMER);
+  pthread_mutex_unlock(&haltExecLock);
+  for(a0=0,a1=0;a0<listInstanceSize;a0++)
+  {
+    a1+=listInstance[a0].cycles;
+  }
+  printf("Cycles : %d\n",a1);
+  pthread_exit(NULL);
+}
+void handlerKilled()
+{
+  printf("killed.\n");
+  pthread_exit(NULL);
 }

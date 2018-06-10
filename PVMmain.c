@@ -3,6 +3,7 @@
 int main(int argc,char **argv)
 {
   signal(SIGSEGV,handlerSegFault);
+  signal(SIGUSR1,handlerKilled);
   if(argc==1)
   {
     printf("PVM Warning: No input file.\n");
@@ -21,7 +22,7 @@ int main(int argc,char **argv)
   printf("mutex finished\n");
   //graphStartUp(&argc,argv);
   //pthread_create(&graphT,NULL,graphMonitor,NULL);
-  
+
   VMStartUp();
   return 0;
 }

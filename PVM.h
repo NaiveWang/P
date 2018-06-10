@@ -31,6 +31,7 @@
 #define GRAPH_WINDOW_L 600
 #define GRAPH_WINDOW_H 400
 #define GRAPH_SLEEPING_TIME 50000
+#define TESTING_TIMER 5000000
 /** MACRO Section **/
 //the number of execution threads, it mainly depends on the hardware
 //#define TN_EXE 3//my computer has 8 logical core, extended by the technology known as intel's hyper threading.
@@ -140,5 +141,6 @@ void graphDisp();
 void *graphMonitor();
 void handlerSegFault(int);
 void releaseMemory();
+void handlerKilled();
 void *performanceCounter();
 #endif
