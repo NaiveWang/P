@@ -120,6 +120,8 @@ int errno;
 gPos *gpp;
 float graph_size;
 //Statistic Data
+long tim;
+struct timespec tspec;
 /** utility functions **/
 /** mutex **/
 //void mutexTinit();

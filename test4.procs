@@ -1,0 +1,15 @@
+.processor t1 16 1024 65536
+.code
+PUSH08 5:0
+#repeat
+OPDECI
+JMPC 16384 end
+PUSH0I8 R 12.34
+PUSH0I8 R 43.21
+OPCMPR
+JUMP #repeat
+#end
+HALT
+.instance i1 t1 R
+.data
+I 1000000

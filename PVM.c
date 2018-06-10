@@ -887,6 +887,9 @@ void VMStartUp()
   pthread_mutex_lock(&rtExecLock);
   pthread_create(&haltT,NULL,VMHalt,NULL);
   pthread_create(&mutexT,NULL,mutexHandler,NULL);
+  clock_gettime(CLOCK_REALTIME,&tspec);
+  printf("<<<<<%ld,%ld\n",tspec.tv_sec,tspec.tv_nsec);
+  tim = tspec.tv_nsec + tspec.tv_sec * 1000000000;
   for(a0=0;a0<NUM_E_THREAD;a0++)
   {
     //check each group
@@ -897,9 +900,9 @@ void VMStartUp()
       pthread_create(&executionThread[a0],NULL,execNormal,&executionGroup[a0]);
     }
   }
-  pthread_create(&testingT,NULL,performanceCounter,NULL);
+  //pthread_create(&testingT,NULL,performanceCounter,NULL);
   pthread_join(haltT,NULL);
-  printf("halted.\n");
+  printf("halted:%ld\n",tim);
   pthread_join(testingT,NULL);
 }
 void *VMHalt()
@@ -907,7 +910,11 @@ void *VMHalt()
   int a0;
   //kill all of the thread
   //kill handler
+
   pthread_mutex_lock(&haltExecLock);
+  clock_gettime(CLOCK_REALTIME,&tspec);
+  printf(">>>>>%ld,%ld\n",tspec.tv_sec,tspec.tv_nsec);
+  tim = tspec.tv_nsec + tspec.tv_sec * 1000000000 - tim;
   pthread_kill(mutexT,SIGUSR1);
   pthread_join(mutexT,NULL);
   //kill execution thread if it is in the running mode
