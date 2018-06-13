@@ -12,10 +12,10 @@ JUMP #repeat
 SUSPEND
 .instance i1 t1 R
 .data
-I 1000000
+I 10000000
 .instance i2 t1 R
 .data
-I 1000000
+I 10000000
 .processor t3 1 1 1
 .code
 HALT
