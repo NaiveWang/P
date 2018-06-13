@@ -58,20 +58,23 @@ int main(int argc,char **argv)
   printf("mutex finished\n");
   /*conf start*/
   //make graph
-  if(flag_graph)
+  //graphStartUp(&argc,argv);
+  //pthread_create(&graphT,NULL,graphMonitor,NULL);
+  if(flag_graph==1)
   {
     graphStartUp(&argc,argv);
     pthread_create(&graphT,NULL,graphMonitor,NULL);
   }
   //mode selection
-  else if(flag_step)
+  if(flag_step)
   {
     //step
-
+    VMStartUp_step();
   }
   else if(flag_debug)
   {
     //show debug info
+    VMStartUp_debug();
   }
   else
   {

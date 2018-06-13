@@ -1007,6 +1007,7 @@ void *execDebug(void *initPointer)
                 if(instanceMountingList->list->instance->performance<MAX_PERFORMANCE_VAL)
                   instanceMountingList->list->instance->performance+=INITIAL_PERFORMANCE_VAL;
                 instanceMountingList->list = instanceMountingList->list->next;
+                getchar();
               }
               break;
             case PROCESSOR_STATUS_SYS:
@@ -1017,6 +1018,7 @@ void *execDebug(void *initPointer)
                 if(instanceMountingList->list->instance->performance<MAX_PERFORMANCE_VAL)
                   instanceMountingList->list->instance->performance+=INITIAL_PERFORMANCE_VAL;
                 instanceMountingList->list = instanceMountingList->list->next;
+                getchar();
               }
               break;
             default://meet up with the suspended section
@@ -1453,7 +1455,7 @@ void graphDisp()
     {
       //draw each dot
       graphDrawInstance(a0);
-      printf("%d/%d\n",a0,listInstance[a0].performance);
+      //printf("%d/%d\n",a0,listInstance[a0].performance);
     }
     glFlush();
   }
