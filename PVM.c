@@ -404,7 +404,7 @@ void debugVM(PBase *p,int howManyStack0Elem)
   }*/
   printf("\nVM Debug End\n");
 }
-void *execDebug(void* no)
+void *execDebug_old(void* no)
 {
   int error=0;
   int ino = *(int*)no;
@@ -754,6 +754,358 @@ void *execNormal(void *initPointer)
     }
   }
 }
+void *execStep(void *initPointer)
+{
+  /**
+   * here is the stepping execution function, it belongs to different thread
+   * and the execution list cones to a circular link list
+   * it will pause every step
+   */
+  //values on the stack whlie running
+  //int performance=INITIAL_PERFORMANCE_VAL;//how much step run on each instance
+  int delay;//this attrbute means sleep how many ms for each circle scan
+  IME *instanceMountingList;
+  int a0,a1;
+  int idleCounter;
+  //initialize the list pointer
+  instanceMountingList = (IME*)initPointer;
+  for(;;)
+  {
+    //running loop, check each of instance list
+    if(delay)
+    {
+      //sleeping section
+      //sleep
+      usleep(delay);
+      //check if exist any instance that at running state
+      for(a0=0;a0<instanceMountingList->INumber;a0++)
+      {
+        if(instanceMountingList->list->instance->status==PROCESSOR_STATUS_RUNNING)
+        {//detected
+          //close the enable flag
+          delay=0;
+          //set performance to start value
+          instanceMountingList->list->instance->performance = INITIAL_PERFORMANCE_VAL;
+          //jump out
+          break;
+        }
+        //check next
+        instanceMountingList->list = instanceMountingList->list->next;
+      }
+      //deal with the situation : nobody was awake
+      if(a0==instanceMountingList->INumber)
+      {
+        //increase the sleeping time
+        if(delay<MAX_DELAY_VAL)//deal with : oops, sleeping to die
+        {
+          //increase it
+          delay += INITIAL_DELAY_VAL;
+        }
+      }
+    }
+    else
+    {
+      //active section
+      //execution section
+      if(instanceMountingList->list->instance->performance)
+      {
+        //running section
+        //set the counter to 0
+        idleCounter=0;
+        a0=instanceMountingList->list->instance->performance;
+        //switch with status
+        while(a0--)
+        {//loop the n cycle
+          //debugVM(instanceMountingList->list->instance,1);
+          switch(instanceMountingList->list->instance->status)
+          {
+            case PROCESSOR_STATUS_RUNNING:
+              //execution
+              //printf("$$$$$$$$$$$%d\n",instanceMountingList->list->instance->status);
+              executionOneStep(instanceMountingList->list->instance);
+              debugVM(instanceMountingList->list->instance,1);
+              //printf("???????????%d\n",instanceMountingList->list->instance->status);
+              getchar();
+              if(a0==0)
+              {
+                if(instanceMountingList->list->instance->performance<MAX_PERFORMANCE_VAL)
+                  instanceMountingList->list->instance->performance+=INITIAL_PERFORMANCE_VAL;
+                instanceMountingList->list = instanceMountingList->list->next;
+              }
+              break;
+            case PROCESSOR_STATUS_SYS:
+              //api calling
+              APIHandler(instanceMountingList->list->instance);
+              if(a0==0)
+              {
+                if(instanceMountingList->list->instance->performance<MAX_PERFORMANCE_VAL)
+                  instanceMountingList->list->instance->performance+=INITIAL_PERFORMANCE_VAL;
+                instanceMountingList->list = instanceMountingList->list->next;
+              }
+              break;
+            default://meet up with the suspended section
+              //set the counter to 0
+              a0=0;
+              //set the performance to 0
+              instanceMountingList->list->instance->performance=0;
+          }
+        }
+      }
+      else
+      {
+        //suspended(board) section
+        //increase the counter
+        idleCounter++;
+        //switch with status
+        switch(instanceMountingList->list->instance->status)
+        {
+          case PROCESSOR_STATUS_HALT:
+            pthread_mutex_unlock(&haltExecLock);
+            errno=0;
+            return NULL;
+            break;
+          case PROCESSOR_STATUS_SUSPENDED:
+            //loop, search each "next instance"
+            for(a0=0;a0<instanceMountingList->list->instance->triggerNum;a0++)
+            {
+              //printf("awaking.............%ld\n",instanceMountingList->list->instance);
+              if(listInstance[instanceMountingList->list->instance->triggerList[a0]].status == PROCESSOR_STATUS_SUSPENDED)
+              {
+                //suspended & was the chosen one
+                //here is the mutex section
+                //
+                pthread_mutex_lock(&triggerLock);
+                listInstance[instanceMountingList->list->instance->triggerList[a0]].status = PROCESSOR_STATUS_RUNNING;
+                pthread_mutex_unlock(&triggerLock);
+              }
+            }
+            break;
+          //case PROCESSOR_STATUS_REBOOT:break;
+          case PROCESSOR_STATUS_MWAIT:
+            pthread_mutex_lock(&rtLock);
+            //queueH++;
+            //queueH %= M_WAITING_LIST_SIZE;
+            mutexHandlerArg.pid = instanceMountingList->list->instance;
+            mutexHandlerArg.mTarget = (mutex*)instanceMountingList->list->instance->exAddr;
+            mutexHandlerArg.opTyp = MTX_HDL_TYP_WAIT;
+            //awake the mutex handler
+            pthread_mutex_unlock(&rtExecLock);
+            //pthread_mutex_unlock(&qLock);
+            break;
+          case PROCESSOR_STATUS_MTEST:
+            //
+            pthread_mutex_lock(&rtLock);
+            //queueH++;
+            //queueH %= M_WAITING_LIST_SIZE;
+            mutexHandlerArg.pid = instanceMountingList->list->instance;
+            mutexHandlerArg.mTarget = (mutex*)instanceMountingList->list->instance->exAddr;
+            mutexHandlerArg.opTyp = MTX_HDL_TYP_TEST;
+            //awake the mutex handler
+            pthread_mutex_unlock(&rtExecLock);
+            //pthread_mutex_unlock(&qLock);
+            break;
+          case PROCESSOR_STATUS_MLEAVE:
+            pthread_mutex_lock(&rtLock);
+            //queueH++;
+            //queueH %= M_WAITING_LIST_SIZE;
+            mutexHandlerArg.pid = instanceMountingList->list->instance;
+            mutexHandlerArg.mTarget = (mutex*)instanceMountingList->list->instance->exAddr;
+            mutexHandlerArg.opTyp = MTX_HDL_TYP_LEAVE;
+            //awake the mutex handler
+            pthread_mutex_unlock(&rtExecLock);
+            //pthread_mutex_unlock(&qLock);
+            //a0=-1;
+            break;
+            default:;//error handler
+        }
+        instanceMountingList->list = instanceMountingList->list->next;
+      }
+      //move to next instance
+      //check the counter if all of the instance are slept
+      if(idleCounter==instanceMountingList->INumber)
+      {
+        //sleep ready!
+        delay = INITIAL_DELAY_VAL;
+      }
+    }
+  }
+}
+void *execDebug(void *initPointer)
+{
+  /**
+   * here is the debugging execution function, it belongs to different thread
+   * and the execution list cones to a circular link list
+   * it will show the info of every message
+   */
+  //values on the stack whlie running
+  //int performance=INITIAL_PERFORMANCE_VAL;//how much step run on each instance
+  int delay;//this attrbute means sleep how many ms for each circle scan
+  IME *instanceMountingList;
+  int a0,a1;
+  int idleCounter;
+  //initialize the list pointer
+  instanceMountingList = (IME*)initPointer;
+  for(;;)
+  {
+    //running loop, check each of instance list
+    if(delay)
+    {
+      //sleeping section
+      //sleep
+      usleep(delay);
+      //check if exist any instance that at running state
+      for(a0=0;a0<instanceMountingList->INumber;a0++)
+      {
+        if(instanceMountingList->list->instance->status==PROCESSOR_STATUS_RUNNING)
+        {//detected
+          //close the enable flag
+          delay=0;
+          //set performance to start value
+          instanceMountingList->list->instance->performance = INITIAL_PERFORMANCE_VAL;
+          //jump out
+          break;
+        }
+        //check next
+        instanceMountingList->list = instanceMountingList->list->next;
+      }
+      //deal with the situation : nobody was awake
+      if(a0==instanceMountingList->INumber)
+      {
+        //increase the sleeping time
+        if(delay<MAX_DELAY_VAL)//deal with : oops, sleeping to die
+        {
+          //increase it
+          delay += INITIAL_DELAY_VAL;
+        }
+      }
+    }
+    else
+    {
+      //active section
+      //execution section
+      if(instanceMountingList->list->instance->performance)
+      {
+        //running section
+        //set the counter to 0
+        idleCounter=0;
+        a0=instanceMountingList->list->instance->performance;
+        //switch with status
+        while(a0--)
+        {//loop the n cycle
+          //debugVM(instanceMountingList->list->instance,1);
+          switch(instanceMountingList->list->instance->status)
+          {
+            case PROCESSOR_STATUS_RUNNING:
+              //execution
+              //printf("$$$$$$$$$$$%d\n",instanceMountingList->list->instance->status);
+              executionOneStep(instanceMountingList->list->instance);
+              debugVM(instanceMountingList->list->instance,1);
+              //printf("???????????%d\n",instanceMountingList->list->instance->status);
+              //getchar();
+              if(a0==0)
+              {
+                if(instanceMountingList->list->instance->performance<MAX_PERFORMANCE_VAL)
+                  instanceMountingList->list->instance->performance+=INITIAL_PERFORMANCE_VAL;
+                instanceMountingList->list = instanceMountingList->list->next;
+              }
+              break;
+            case PROCESSOR_STATUS_SYS:
+              //api calling
+              APIHandler(instanceMountingList->list->instance);
+              if(a0==0)
+              {
+                if(instanceMountingList->list->instance->performance<MAX_PERFORMANCE_VAL)
+                  instanceMountingList->list->instance->performance+=INITIAL_PERFORMANCE_VAL;
+                instanceMountingList->list = instanceMountingList->list->next;
+              }
+              break;
+            default://meet up with the suspended section
+              //set the counter to 0
+              a0=0;
+              //set the performance to 0
+              instanceMountingList->list->instance->performance=0;
+          }
+        }
+      }
+      else
+      {
+        //suspended(board) section
+        //increase the counter
+        idleCounter++;
+        //switch with status
+        switch(instanceMountingList->list->instance->status)
+        {
+          case PROCESSOR_STATUS_HALT:
+            pthread_mutex_unlock(&haltExecLock);
+            errno=0;
+            return NULL;
+            break;
+          case PROCESSOR_STATUS_SUSPENDED:
+            //loop, search each "next instance"
+            for(a0=0;a0<instanceMountingList->list->instance->triggerNum;a0++)
+            {
+              //printf("awaking.............%ld\n",instanceMountingList->list->instance);
+              if(listInstance[instanceMountingList->list->instance->triggerList[a0]].status == PROCESSOR_STATUS_SUSPENDED)
+              {
+                //suspended & was the chosen one
+                //here is the mutex section
+                //
+                pthread_mutex_lock(&triggerLock);
+                listInstance[instanceMountingList->list->instance->triggerList[a0]].status = PROCESSOR_STATUS_RUNNING;
+                pthread_mutex_unlock(&triggerLock);
+              }
+            }
+            break;
+          //case PROCESSOR_STATUS_REBOOT:break;
+          case PROCESSOR_STATUS_MWAIT:
+            pthread_mutex_lock(&rtLock);
+            //queueH++;
+            //queueH %= M_WAITING_LIST_SIZE;
+            mutexHandlerArg.pid = instanceMountingList->list->instance;
+            mutexHandlerArg.mTarget = (mutex*)instanceMountingList->list->instance->exAddr;
+            mutexHandlerArg.opTyp = MTX_HDL_TYP_WAIT;
+            //awake the mutex handler
+            pthread_mutex_unlock(&rtExecLock);
+            //pthread_mutex_unlock(&qLock);
+            break;
+          case PROCESSOR_STATUS_MTEST:
+            //
+            pthread_mutex_lock(&rtLock);
+            //queueH++;
+            //queueH %= M_WAITING_LIST_SIZE;
+            mutexHandlerArg.pid = instanceMountingList->list->instance;
+            mutexHandlerArg.mTarget = (mutex*)instanceMountingList->list->instance->exAddr;
+            mutexHandlerArg.opTyp = MTX_HDL_TYP_TEST;
+            //awake the mutex handler
+            pthread_mutex_unlock(&rtExecLock);
+            //pthread_mutex_unlock(&qLock);
+            break;
+          case PROCESSOR_STATUS_MLEAVE:
+            pthread_mutex_lock(&rtLock);
+            //queueH++;
+            //queueH %= M_WAITING_LIST_SIZE;
+            mutexHandlerArg.pid = instanceMountingList->list->instance;
+            mutexHandlerArg.mTarget = (mutex*)instanceMountingList->list->instance->exAddr;
+            mutexHandlerArg.opTyp = MTX_HDL_TYP_LEAVE;
+            //awake the mutex handler
+            pthread_mutex_unlock(&rtExecLock);
+            //pthread_mutex_unlock(&qLock);
+            //a0=-1;
+            break;
+            default:;//error handler
+        }
+        instanceMountingList->list = instanceMountingList->list->next;
+      }
+      //move to next instance
+      //check the counter if all of the instance are slept
+      if(idleCounter==instanceMountingList->INumber)
+      {
+        //sleep ready!
+        delay = INITIAL_DELAY_VAL;
+      }
+    }
+  }
+}
 void dispatcher()
 {
   int c0,c1;
@@ -885,6 +1237,60 @@ void VMStartUp()
       //run the thread!
       printf("creating %d ...\n",a0);
       pthread_create(&executionThread[a0],NULL,execNormal,&executionGroup[a0]);
+    }
+  }
+  //halt handller
+  pthread_mutex_init(&haltExecLock,NULL);
+  pthread_mutex_lock(&haltExecLock);
+  pthread_mutex_init(&triggerLock,NULL);
+  pthread_mutex_init(&rtLock,NULL);
+  pthread_mutex_init(&rtExecLock,NULL);
+  pthread_mutex_lock(&rtExecLock);
+  pthread_create(&haltT,NULL,VMHalt,NULL);
+  pthread_create(&mutexT,NULL,mutexHandler,NULL);
+  pthread_join(haltT,NULL);
+}
+void VMStartUp_step()
+{
+  //loop :
+  int a0;
+  //check each thread dispatcher,
+  //create the thread which has non-zero list
+  for(a0=0;a0<NUM_E_THREAD;a0++)
+  {
+    //check each group
+    if(executionGroup[a0].INumber)
+    {
+      //run the thread!
+      printf("creating %d ...\n",a0);
+      pthread_create(&executionThread[a0],NULL,execStep,&executionGroup[a0]);
+    }
+  }
+  //halt handller
+  pthread_mutex_init(&haltExecLock,NULL);
+  pthread_mutex_lock(&haltExecLock);
+  pthread_mutex_init(&triggerLock,NULL);
+  pthread_mutex_init(&rtLock,NULL);
+  pthread_mutex_init(&rtExecLock,NULL);
+  pthread_mutex_lock(&rtExecLock);
+  pthread_create(&haltT,NULL,VMHalt,NULL);
+  pthread_create(&mutexT,NULL,mutexHandler,NULL);
+  pthread_join(haltT,NULL);
+}
+void VMStartUp_debug()
+{
+  //loop :
+  int a0;
+  //check each thread dispatcher,
+  //create the thread which has non-zero list
+  for(a0=0;a0<NUM_E_THREAD;a0++)
+  {
+    //check each group
+    if(executionGroup[a0].INumber)
+    {
+      //run the thread!
+      printf("creating %d ...\n",a0);
+      pthread_create(&executionThread[a0],NULL,execDebug,&executionGroup[a0]);
     }
   }
   //halt handller
