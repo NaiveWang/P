@@ -38,34 +38,37 @@ void MUTW(PBase *p)
   //set the status
   p->status = PROCESSOR_STATUS_MWAIT;
   //put addr into exporting address
-  asm("movq %0,%%rax"::"r"(p->pc));
+  asm("movq %0,%%r8"::"r"(p->pc));
   asm("xorq %rcx,%rcx");
-  asm("movb 2(%rax),%cl");
-  asm("movq %0,%%rax"::"r"(p->data + POINTER_STACK0));
-  asm("movq (%rax,%rcx,8),%rax");
+  asm("movb 2(%r8),%cl");
+  //asm("movl %%ecx,%0":"=r"(p->debugBuffer));
+  asm("movq %0,%%r8"::"r"(p->data));
+  asm("movq (%r8,%rcx,8),%rax");
+  //asm("movq %%rcx,%0":"=r"(p->debugBuffer));
   asm("movq %%rax,%0":"=r"(p->exAddr));
   //modify pc
+  //printf("\t%lx",p->exAddr);
   p->pc+=3;
 }
 void MUTL(PBase *p)
 {
   p->status = PROCESSOR_STATUS_MLEAVE;
-  asm("movq %0,%%rax"::"r"(p->pc));
+  asm("movq %0,%%r8"::"r"(p->pc));
   asm("xorq %rcx,%rcx");
-  asm("movb 2(%rax),%cl");
-  asm("movq %0,%%rax"::"r"(p->data + POINTER_STACK0));
-  asm("movq (%rax,%rcx,8),%rax");
+  asm("movb 2(%r8),%cl");
+  asm("movq %0,%%r8"::"r"(p->data));
+  asm("movq (%r8,%rcx,8),%rax");
   asm("movq %%rax,%0":"=r"(p->exAddr));
   p->pc+=3;
 }
 void MUTT(PBase *p)
 {
   p->status = PROCESSOR_STATUS_MTEST;
-  asm("movq %0,%%rax"::"r"(p->pc));
+  asm("movq %0,%%r8"::"r"(p->pc));
   asm("xorq %rcx,%rcx");
-  asm("movb 2(%rax),%cl");
-  asm("movq %0,%%rax"::"r"(p->data + POINTER_STACK0));
-  asm("movq (%rax,%rcx,8),%rax");
+  asm("movb 2(%r8),%cl");
+  asm("movq %0,%%r8"::"r"(p->data));
+  asm("movq (%r8,%rcx,8),%rax");
   asm("movq %%rax,%0":"=r"(p->exAddr));
   p->pc+=3;
 }
@@ -1103,7 +1106,7 @@ IR pir[]={
   {6,"SYS"},{2,"HALT"},{2,"SUSPEND"},{2,"REBOOT"},
   {3,"MUTW"},{3,"MUTL"},{3,"MUTT"},
   {2,"MOV1A"},{12,"MOV1"},{2,"MOV8A"},{12,"MOV8"},{2,"MOVBA"},
-  {7,"PUSH0A"},{10,"PUSH0I8"},{10,"PUSH0I1"},{7,"PUSH08"},{7,"PUSH01"},{7,"POP08"},{7,"POP01"},
+  {7,"PUSH0A"},{10,"PUSH0I8"},{3,"PUSH0I1"},{7,"PUSH08"},{7,"PUSH01"},{7,"POP08"},{7,"POP01"},
   {7,"PUSH1"},{7,"POP1"},{7,"PUSH8"},{7,"POP8"},
   {2,"CBI"},{2,"CIBI"},{2,"CIB"},{2,"CRI"},{2,"CIR"},
   {2,"ALLO"},{2,"FREE"},

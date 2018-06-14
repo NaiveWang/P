@@ -75,6 +75,7 @@ int matchIdentifier(char *List,int n)
   //strCopy(target,identifierBuffer);
   while(n--)
   {
+    //printf("$%s$\t$%s$\n",identifierBuffer,nameSeek(List,n));
     if(!strcmp(identifierBuffer,nameSeek(List,n))) return n;
   }
   errno=3;
@@ -444,7 +445,8 @@ void parseProcessorCode()
             break;//todo
           case 3://1 byte instant
             skipWhitespace();
-            sscanf(inputBuffer+inputBufferPointer,"%c",(char*)(pe->processorTemplates[pListNum-1].code+a1+2));
+            sscanf(inputBuffer+inputBufferPointer,"%d",(int*)(pe->processorTemplates[pListNum-1].code+a1+2));
+            //printf("\t\t%d",*(char*)(pe->processorTemplates[pListNum-1].code+a1+2));
             break;
           case 14://4 byte mask instant, 8 byte offset
             skipWhitespace();

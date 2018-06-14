@@ -130,6 +130,7 @@ void *mutexHandler()
     printf("handler ended\n");
   }*/
   //here is the new one
+  int a0;
   for(;;)
   {
       //infinite loop
@@ -137,12 +138,33 @@ void *mutexHandler()
       pthread_mutex_lock(&rtExecLock);
       //do the job
       //read arguments global arguments
+      //find the mutex
+      //printf("MMMMMMMMMMM:%d\n",listMutexSize);
+      for(a0=0;a0<listMutexSize;a0++)
+      {
+        //check address
+        //printf("$%lx$\t$%lx$",listMutex[a0].content,mutexHandlerArg.mTarget);
+        if(listMutex[a0].content == (void*)mutexHandlerArg.mTarget)
+        {
+          mutexHandlerArg.mTarget = (mutex*)(listMutex+a0);
+          break;
+        }
+      }
+      if(a0==listMutexSize)
+      {
+        printf("Error : invalid mutex entry.\n");
+        //error handler
+        pthread_mutex_unlock(&haltExecLock);
+      }
+      //printf("mutex handler : \"I am awake!\"%lx\n",mutexHandlerArg.mTarget);
       switch(mutexHandlerArg.opTyp)
       {
           case MTX_HDL_TYP_WAIT:
             //test the mutex status
+            //printf("wait mutex\n");
             if(mutexHandlerArg.mTarget->lock==NULL)
             {
+              //printf("wait mutex%lx\n",mutexHandlerArg.mTarget);
                 //can take over
                 //take over
                 mutexHandlerArg.mTarget->lock=mutexHandlerArg.pid;
@@ -240,12 +262,14 @@ void VMReadFile(char *file)
   }//getchar();
   //initialaze the mutex list
   c0=VMpe->mutexNum;
+  listMutexSize = c0;
   listMutex=malloc(sizeof(mutex) * c0);
   while(c0--)
   {
     (listMutex + c0)->lock = NULL;
     (listMutex + c0)->size = *(VMpe->mutexSizeList + c0);
     (listMutex + c0)->content = malloc((listMutex + c0)->size);
+    printf("Mutex %d/%lx/%lx\n",c0,(long)(listMutex+c0),(long)((listMutex + c0)->content));
     (listMutex + c0)->waitList = NULL;
   }
 
@@ -1026,6 +1050,7 @@ void *execDebug(void *initPointer)
               a0=0;
               //set the performance to 0
               instanceMountingList->list->instance->performance=0;
+              getchar();
           }
         }
       }
@@ -1066,6 +1091,7 @@ void *execDebug(void *initPointer)
             mutexHandlerArg.pid = instanceMountingList->list->instance;
             mutexHandlerArg.mTarget = (mutex*)instanceMountingList->list->instance->exAddr;
             mutexHandlerArg.opTyp = MTX_HDL_TYP_WAIT;
+            //printf("waiting mutex...%lx\n",mutexHandlerArg.mTarget->content);
             //awake the mutex handler
             pthread_mutex_unlock(&rtExecLock);
             //pthread_mutex_unlock(&qLock);

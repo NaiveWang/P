@@ -24,7 +24,7 @@
 typedef struct AInstanceOfProcessor
 {
   void *PID;
-  int debugBuffer;
+  long debugBuffer;
   int performance;
   int triggerNum;
   int *triggerList;

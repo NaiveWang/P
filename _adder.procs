@@ -1,0 +1,31 @@
+.processor adderL 40 8 40
+.code
+PUSH08 5:0
+PUSH08 5:8
+OPADDI
+POP08 255:0
+REBOOT
+.processor adderR 40 8 40
+.code
+PUSH08 5:0
+PUSH08 5:8
+OPADDI
+POP08 255:8
+REBOOT
+.processor adderRoot 40 8 40
+.code
+PUSH08 5:0
+PUSH08 5:8
+OPADDI
+HALT
+.instance a_root adderRoot S
+.instance a_1l1 adderL R
+.data
+I 1,2
+.instance a_1l2 adderR R
+.data
+I 3,4
+.connection a_1l2 255 a_root
+.connection a_1l1 255 a_root
+.constraint a_1l2 a_root
+.constraint a_1l1 a_root

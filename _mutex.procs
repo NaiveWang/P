@@ -1,0 +1,24 @@
+.processor hugeStomach 40 8 40
+.code
+#START
+MUTW 255
+;mutex section started
+PUSH08 5:0
+;counter section
+#CONTINUE
+OPDECI
+JMPN 16384 CONTINUE
+;end
+MUTL 255
+POP08 5:8
+JUMP #START
+
+.mutex cake 8
+.instance fatAss1 hugeStomach R
+.data
+I 3
+.instance fatAss2 hugeStomach R
+.data
+I 4
+.connection fatAss1 255 cake
+.connection fatAss2 255 cake
