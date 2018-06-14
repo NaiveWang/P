@@ -141,4 +141,5 @@ void graphDisp();
 void *graphMonitor();
 void handlerSegFault(int);
 void releaseMemory();
+void debugPrintWaitingList();
 #endif

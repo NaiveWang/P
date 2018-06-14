@@ -1,134 +1,24 @@
 #include "PVM.h"
+void debugPrintWaitingList()
+{
+  //show the waiting list
+  int a0;
+  waitL *p;
+  for(a0=0;a0<listMutexSize;a0++)
+  {
+    //print list of each mutex
+    p=listMutex[a0].waitList;
+    while(p)
+    {
+      printf("%ld|",(long)p->pid);
+      p=p->next;
+    }
+    printf("||\n");
+  }
+  printf("\n");
+}
 void *mutexHandler()
 {
-  /*int c0,c1;
-  for(;;)
-  {
-    //wait for the handler lock
-    pthread_mutex_lock(&rtLock);
-    //wait the mutex of queue
-    pthread_mutex_lock(&qLock);
-    //do the job
-    printf("Handling!!!%d %d\n",queueH,queueT);
-    while(queueH-queueT)
-    {
-      //some thing on queue handle one node of it
-      //branch, get the resource or wait?
-      switch(waitingQueue[queueT].opTyp)
-      {
-        case MTX_HDL_TYP_WAIT://wait procedure
-          //look up the mutex lock
-          if(waitingQueue[queueT].mTarget->lock)
-          {
-            //non-zero, wait
-            //put the instance info into the tail
-            if(waitingQueue[queueT].mTarget->waitList)
-            {
-              waitL *wlp = waitingQueue[queueT].mTarget->waitList;
-              //there are some node here
-              //find tail
-              while(wlp->next) wlp = wlp->next;
-              wlp->next = malloc(sizeof(waitL));
-              wlp = wlp->next;
-              wlp->next = NULL;
-              wlp->pid = waitingQueue[queueT].pid;
-            }
-            else
-            {
-              //there are no node, just initlize it.
-              waitingQueue[queueT].mTarget->waitList = malloc(sizeof(waitL));
-              //assign the value
-              waitingQueue[queueT].mTarget->waitList->next=NULL;
-              waitingQueue[queueT].mTarget->waitList->pid = waitingQueue[queueT].pid;
-            }
-            //leave the status to wait(nop)
-          }
-          else
-          {
-            //zero, take the bun!
-            //set the lock
-            waitingQueue[queueT].mTarget->lock = waitingQueue[queueT].pid;
-            //set the status to running
-            waitingQueue[queueT].pid->status = PROCESSOR_STATUS_RUNNING;
-            waitingQueue[queueT].pid->performance = INITIAL_PERFORMANCE_VAL;
-          }
-          break;
-        case MTX_HDL_TYP_TEST:
-          //test, always set running at least
-          //set what ? flag!!!!!!
-          //branch, if the mutex is vacant
-          if(waitingQueue[queueT].mTarget->lock)
-          {
-            //locked, set flag to 0
-            waitingQueue[queueT].pid->eflag = 0;
-          }
-          else
-          {
-            //bingo
-            //set the lock
-            waitingQueue[queueT].mTarget->lock = waitingQueue[queueT].pid;
-            //set flag to -1
-            waitingQueue[queueT].pid->eflag = -1;
-          }
-          //always set the status to runnning
-          waitingQueue[queueT].pid->status = PROCESSOR_STATUS_RUNNING;
-          waitingQueue[queueT].pid->performance = INITIAL_PERFORMANCE_VAL;
-          break;
-        case MTX_HDL_TYP_LEAVE:
-          //set the lock to zero
-          waitingQueue[queueT].mTarget->lock = NULL;
-          //set the current instance to running status
-          waitingQueue[queueT].pid->status = PROCESSOR_STATUS_RUNNING;
-          waitingQueue[queueT].pid->performance = INITIAL_PERFORMANCE_VAL;
-          //if there is any thing on waiting list, get it with lock
-          if(waitingQueue[queueT].mTarget->waitList)
-          {
-            waitL *wlp;
-            //something, give it to it
-            wlp = waitingQueue[queueT].mTarget->waitList;
-            waitingQueue[queueT].mTarget->lock = wlp->pid;
-            wlp->pid->status = PROCESSOR_STATUS_RUNNING;
-            waitingQueue[queueT].mTarget->waitList = waitingQueue[queueT].mTarget->waitList->next;
-            free(wlp);
-          }
-          break;
-        /*case TRIGGER:
-        //handle with trigger
-          //add the value into every next processor
-          printf("OOO");
-          for(c0=0;&listInstance[c0]!=waitingQueue[queueT].pid;c0++);
-          //modify related instance trigger value
-          for(c1=0;c1<triggerList[c0].number;c1++)
-          {
-            //increase the value of list
-            listInstance[triggerList[c0].list[c1]].currentVal++;
-          }
-          //loop : scan the instances
-
-          for(c0=0;c0<listInstanceSize;c0++)
-          {
-            //condition : suspended/match the value
-            if(listInstance[c0].status == PROCESSOR_STATUS_SUSPENDED && listInstance[c0].triggerVal == listInstance[c0].currentVal)
-            {
-              //set it running,
-              listInstance[c0].status = PROCESSOR_STATUS_RUNNING;
-              //change the current val to 0
-              listInstance[c0].currentVal = 0;
-            }
-          }
-          break;
-        default : ;//error halt;
-      }
-      //delete one of the node
-      queueT++;
-      queueT %= M_WAITING_LIST_SIZE;
-    }
-    //unlock mutex
-    pthread_mutex_unlock(&qLock);
-    //ground self
-    pthread_mutex_lock(&rtLock);
-    printf("handler ended\n");
-  }*/
   //here is the new one
   int a0;
   for(;;)
@@ -157,16 +47,17 @@ void *mutexHandler()
         pthread_mutex_unlock(&haltExecLock);
       }
       //printf("mutex handler : \"I am awake!\"%lx\n",mutexHandlerArg.mTarget);
+      printf("%ld",mutexHandlerArg.pid);
       switch(mutexHandlerArg.opTyp)
       {
           case MTX_HDL_TYP_WAIT:
             //test the mutex status
-            //printf("wait mutex\n");
             if(mutexHandlerArg.mTarget->lock==NULL)
             {
               //printf("wait mutex%lx\n",mutexHandlerArg.mTarget);
                 //can take over
                 //take over
+                printf("Got it!\n");
                 mutexHandlerArg.mTarget->lock=mutexHandlerArg.pid;
                 //set status to running
                 mutexHandlerArg.pid->status=PROCESSOR_STATUS_RUNNING;
@@ -176,6 +67,7 @@ void *mutexHandler()
             {
                 //need wait, put it on the waiting list
                 //list is empty?
+                printf("Waiting\n");
                 if(mutexHandlerArg.mTarget->waitList==NULL)
                 {
                     //empty, set the first element
@@ -192,6 +84,7 @@ void *mutexHandler()
                     p->next->next=NULL;
                     p->next->pid=mutexHandlerArg.pid;
                 }
+                mutexHandlerArg.pid->status=PROCESSOR_STATUS_SUSPENDED;
             }
             break;
           case MTX_HDL_TYP_TEST:
@@ -216,6 +109,7 @@ void *mutexHandler()
             break;
           case MTX_HDL_TYP_LEAVE:
               //set the master instance's status to running
+              printf("Leave.\n");
               mutexHandlerArg.pid->status=PROCESSOR_STATUS_RUNNING;
               mutexHandlerArg.pid->performance=INITIAL_PERFORMANCE_VAL;
               //look up the list(branch)
@@ -241,6 +135,7 @@ void *mutexHandler()
               break;
           default:;//awake error handler
       }
+      debugPrintWaitingList();
       //release the mutex
       pthread_mutex_unlock(&rtLock);
   }
@@ -730,14 +625,14 @@ void *execNormal(void *initPointer)
             break;
           //case PROCESSOR_STATUS_REBOOT:break;
           case PROCESSOR_STATUS_MWAIT:
-            pthread_mutex_lock(&rtLock);
+            pthread_mutex_lock(&rtLock);printf("W\n");
             //queueH++;
             //queueH %= M_WAITING_LIST_SIZE;
             mutexHandlerArg.pid = instanceMountingList->list->instance;
             mutexHandlerArg.mTarget = (mutex*)instanceMountingList->list->instance->exAddr;
             mutexHandlerArg.opTyp = MTX_HDL_TYP_WAIT;
             //awake the mutex handler
-            pthread_mutex_unlock(&rtExecLock);
+            pthread_mutex_unlock(&rtExecLock);printf("WSSS\n");
             //pthread_mutex_unlock(&qLock);
             break;
           case PROCESSOR_STATUS_MTEST:
@@ -1256,6 +1151,15 @@ void VMStartUp()
   //loop :
   int a0;
   //check each thread dispatcher,
+  //halt handller
+  pthread_mutex_init(&haltExecLock,NULL);
+  pthread_mutex_lock(&haltExecLock);
+  pthread_mutex_init(&triggerLock,NULL);
+  pthread_mutex_init(&rtLock,NULL);
+  pthread_mutex_init(&rtExecLock,NULL);
+  pthread_mutex_lock(&rtExecLock);
+  pthread_create(&haltT,NULL,VMHalt,NULL);
+  pthread_create(&mutexT,NULL,mutexHandler,NULL);
   //create the thread which has non-zero list
   for(a0=0;a0<NUM_E_THREAD;a0++)
   {
@@ -1267,7 +1171,13 @@ void VMStartUp()
       pthread_create(&executionThread[a0],NULL,execNormal,&executionGroup[a0]);
     }
   }
-  //halt handller
+  pthread_join(haltT,NULL);
+}
+void VMStartUp_step()
+{
+  //loop :
+  int a0;
+  //check each thread dispatcher,
   pthread_mutex_init(&haltExecLock,NULL);
   pthread_mutex_lock(&haltExecLock);
   pthread_mutex_init(&triggerLock,NULL);
@@ -1276,13 +1186,6 @@ void VMStartUp()
   pthread_mutex_lock(&rtExecLock);
   pthread_create(&haltT,NULL,VMHalt,NULL);
   pthread_create(&mutexT,NULL,mutexHandler,NULL);
-  pthread_join(haltT,NULL);
-}
-void VMStartUp_step()
-{
-  //loop :
-  int a0;
-  //check each thread dispatcher,
   //create the thread which has non-zero list
   for(a0=0;a0<NUM_E_THREAD;a0++)
   {
@@ -1295,14 +1198,6 @@ void VMStartUp_step()
     }
   }
   //halt handller
-  pthread_mutex_init(&haltExecLock,NULL);
-  pthread_mutex_lock(&haltExecLock);
-  pthread_mutex_init(&triggerLock,NULL);
-  pthread_mutex_init(&rtLock,NULL);
-  pthread_mutex_init(&rtExecLock,NULL);
-  pthread_mutex_lock(&rtExecLock);
-  pthread_create(&haltT,NULL,VMHalt,NULL);
-  pthread_create(&mutexT,NULL,mutexHandler,NULL);
   pthread_join(haltT,NULL);
 }
 void VMStartUp_debug()
@@ -1311,6 +1206,14 @@ void VMStartUp_debug()
   int a0;
   //check each thread dispatcher,
   //create the thread which has non-zero list
+  pthread_mutex_init(&haltExecLock,NULL);
+  pthread_mutex_lock(&haltExecLock);
+  pthread_mutex_init(&triggerLock,NULL);
+  pthread_mutex_init(&rtLock,NULL);
+  pthread_mutex_init(&rtExecLock,NULL);
+  pthread_mutex_lock(&rtExecLock);
+  pthread_create(&haltT,NULL,VMHalt,NULL);
+  pthread_create(&mutexT,NULL,mutexHandler,NULL);
   for(a0=0;a0<NUM_E_THREAD;a0++)
   {
     //check each group
@@ -1322,14 +1225,6 @@ void VMStartUp_debug()
     }
   }
   //halt handller
-  pthread_mutex_init(&haltExecLock,NULL);
-  pthread_mutex_lock(&haltExecLock);
-  pthread_mutex_init(&triggerLock,NULL);
-  pthread_mutex_init(&rtLock,NULL);
-  pthread_mutex_init(&rtExecLock,NULL);
-  pthread_mutex_lock(&rtExecLock);
-  pthread_create(&haltT,NULL,VMHalt,NULL);
-  pthread_create(&mutexT,NULL,mutexHandler,NULL);
   pthread_join(haltT,NULL);
 }
 void *VMHalt()
@@ -1458,7 +1353,7 @@ void graphDrawInstance(int id)
   //set the color
   static float dot_size;
   glColor3f(1.0f,
-    1.0-((float)listInstance[id].performance/(float)MAX_PERFORMANCE_VAL),
+    listInstance[id].performance?0.0f:1.0f,
     1.0-((float)listInstance[id].performance/(float)MAX_PERFORMANCE_VAL));
   //printf("$%f$\n",(listInstance[id].performance/(float)MAX_PERFORMANCE_VAL));
   dot_size = graph_size/40;

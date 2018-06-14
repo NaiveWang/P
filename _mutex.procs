@@ -3,6 +3,10 @@
 #START
 MUTW 255
 ;mutex section started
+PUSH08 255:0
+OPINCI
+POP08 255:0
+;mutex operation
 PUSH08 5:0
 ;counter section
 #CONTINUE
@@ -16,9 +20,9 @@ JUMP #START
 .mutex cake 8
 .instance fatAss1 hugeStomach R
 .data
-I 3
+I 10000000
 .instance fatAss2 hugeStomach R
 .data
-I 4
+I 20000000
 .connection fatAss1 255 cake
 .connection fatAss2 255 cake

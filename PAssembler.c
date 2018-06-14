@@ -457,6 +457,7 @@ void parseProcessorCode()
             strCopy(inputBuffer+inputBufferPointer,identifierBuffer);
             for(a2=0;a2<PNLpointer;a2++)
             {
+              //printf("|%s|\t|%s|\n",identifierBuffer,PNL[a2].name);
               if(!strcmp(identifierBuffer,PNL[a2].name))
               {//match
                 *(long*)(pe->processorTemplates[pListNum-1].code+a1+6)=(long)(PNL[a2].ofst-a1);
