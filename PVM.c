@@ -47,7 +47,7 @@ void *mutexHandler()
         pthread_mutex_unlock(&haltExecLock);
       }
       //printf("mutex handler : \"I am awake!\"%lx\n",mutexHandlerArg.mTarget);
-      printf("%ld",mutexHandlerArg.pid);
+      //printf("%ld",mutexHandlerArg.pid);
       switch(mutexHandlerArg.opTyp)
       {
           case MTX_HDL_TYP_WAIT:
@@ -57,7 +57,7 @@ void *mutexHandler()
               //printf("wait mutex%lx\n",mutexHandlerArg.mTarget);
                 //can take over
                 //take over
-                printf("Got it!\n");
+                //printf("Got it!\n");
                 mutexHandlerArg.mTarget->lock=mutexHandlerArg.pid;
                 //set status to running
                 mutexHandlerArg.pid->status=PROCESSOR_STATUS_RUNNING;
@@ -67,7 +67,7 @@ void *mutexHandler()
             {
                 //need wait, put it on the waiting list
                 //list is empty?
-                printf("Waiting\n");
+                //printf("Waiting\n");
                 if(mutexHandlerArg.mTarget->waitList==NULL)
                 {
                     //empty, set the first element
@@ -109,7 +109,7 @@ void *mutexHandler()
             break;
           case MTX_HDL_TYP_LEAVE:
               //set the master instance's status to running
-              printf("Leave.\n");
+              //printf("Leave.\n");
               mutexHandlerArg.pid->status=PROCESSOR_STATUS_RUNNING;
               mutexHandlerArg.pid->performance=INITIAL_PERFORMANCE_VAL;
               //look up the list(branch)
@@ -135,7 +135,7 @@ void *mutexHandler()
               break;
           default:;//awake error handler
       }
-      debugPrintWaitingList();
+      //debugPrintWaitingList();
       //release the mutex
       pthread_mutex_unlock(&rtLock);
   }
@@ -314,7 +314,7 @@ void debugVM(PBase *p,int howManyStack0Elem)
   //PRINTADDR(*(long*)p->data);
   //printf("Stack0pointer : %lx \n",*(long*)(p->data + POINTER_STACK0));
   stack0p=(long*)*(long*)(p->data + POINTER_STACK0);
-  printf("stack0TopValue :%lx:%lx:%ld/%lx/%ld\n",*(long*)(p->data+8),(long)stack0p,*(stack0p-1),*(stack0p-1),*(stack0p-1));
+  printf("stack0TopValue :%lx:%lx:%ld/%lx/%ld/%lf\n",*(long*)(p->data+8),(long)stack0p,*(stack0p-1),*(stack0p-1),*(stack0p-1),*(stack0p-1));
   printf("##%ld\t", *(long*)(p->data+40));
   /*while(howManyStack0Elem--)
   {
@@ -625,14 +625,14 @@ void *execNormal(void *initPointer)
             break;
           //case PROCESSOR_STATUS_REBOOT:break;
           case PROCESSOR_STATUS_MWAIT:
-            pthread_mutex_lock(&rtLock);printf("W\n");
+            pthread_mutex_lock(&rtLock);//printf("W\n");
             //queueH++;
             //queueH %= M_WAITING_LIST_SIZE;
             mutexHandlerArg.pid = instanceMountingList->list->instance;
             mutexHandlerArg.mTarget = (mutex*)instanceMountingList->list->instance->exAddr;
             mutexHandlerArg.opTyp = MTX_HDL_TYP_WAIT;
             //awake the mutex handler
-            pthread_mutex_unlock(&rtExecLock);printf("WSSS\n");
+            pthread_mutex_unlock(&rtExecLock);//printf("WSSS\n");
             //pthread_mutex_unlock(&qLock);
             break;
           case PROCESSOR_STATUS_MTEST:

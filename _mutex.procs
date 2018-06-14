@@ -20,9 +20,9 @@ JUMP #START
 .mutex cake 8
 .instance fatAss1 hugeStomach R
 .data
-I 10000000
+I 10
 .instance fatAss2 hugeStomach R
 .data
-I 20000000
+I 20
 .connection fatAss1 255 cake
 .connection fatAss2 255 cake
