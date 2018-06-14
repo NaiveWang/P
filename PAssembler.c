@@ -464,8 +464,11 @@ void parseProcessorCode()
                   //*(long*)(pe->processorTemplates[pListNum-1].code+a1+2)+=a0;
                 break;
               }
-              errno=18;
-              return;
+              if(a2==PNLpointer)
+              {
+                errno=18;
+                return;
+              }
             }
             break;//todo
       }
