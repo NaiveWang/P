@@ -314,7 +314,7 @@ void debugVM(PBase *p,int howManyStack0Elem)
   //PRINTADDR(*(long*)p->data);
   //printf("Stack0pointer : %lx \n",*(long*)(p->data + POINTER_STACK0));
   stack0p=(long*)*(long*)(p->data + POINTER_STACK0);
-  printf("stack0TopValue :%lx:%lx:%ld/%lx/%ld/%lf\n",*(long*)(p->data+8),(long)stack0p,*(stack0p-1),*(stack0p-1),*(stack0p-1),*(stack0p-1));
+  printf("stack0TopValue :%lx:%lx:%ld/%lx/%ld/%lf\n",*(long*)(p->data+8),(long)stack0p,*(stack0p-1),*(stack0p-1),*(stack0p-1),*(double*)(stack0p-1));
   printf("##%ld\t", *(long*)(p->data+40));
   /*while(howManyStack0Elem--)
   {
