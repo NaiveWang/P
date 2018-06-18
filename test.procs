@@ -1,7 +1,7 @@
 
 .processor  test 8 256 1000
 .code
-PUSH0I8 I 40000000
+PUSH0I8 I 4000000
 #S
 
 ;PUSH08 1:0
@@ -14,6 +14,43 @@ REBOOT
 .instance i2 test S
 .instance i4 test S
 .instance i5 test S
+.instance i6 test R
+.instance i7 test R
+.instance i8 test R
+.instance i9 test R
+.instance i10 test R
+.instance i11 test R
+.instance i12 test R
+.instance i13 test R
+.instance i14 test R
+.instance i15 test R
+.instance i16 test R
+.instance i17 test R
+.instance i18 test R
+.instance i19 test R
+.instance i20 test R
+.instance i21 test R
+.instance i22 test R
+.instance i23 test R
+.instance i24 test R
+.instance i25 test R
+.instance i26 test R
+.instance i27 test R
+.instance i28 test R
+.instance i29 test R
+.instance i30 test R
+.instance i31 test R
+.instance i32 test R
+.instance i33 test R
+.instance i34 test R
+.instance i35 test R
+.instance i36 test R
+.instance i37 test R
+.instance i38 test R
+.instance i39 test R
+.instance i40 test R
+.instance $ test R
+.instance ￥ test R
 .mutex m1 1000
 .mutex m2 1000
 .mutex m3 1000
@@ -25,3 +62,41 @@ REBOOT
 .constraint i4 i5
 .constraint i5 i2
 .connection i1 255 m1
+.constraint $ ￥
+.constraint ￥ $
+.constraint i6 i7
+.constraint i7 i6
+.constraint i8 i8
+.constraint i9 i9
+.constraint i10 i10
+
+.constraint i11 i11
+.constraint i12 i12
+.constraint i13 i13
+.constraint i14 i14
+.constraint i15 i15
+.constraint i16 i16
+.constraint i18 i18
+.constraint i17 i17
+.constraint i19 i19
+.constraint i20 i20
+.constraint i21 i21
+.constraint i22 i22
+.constraint i23 i23
+.constraint i24 i24
+.constraint i26 i26
+.constraint i25 i25
+.constraint i28 i28
+.constraint i27 i27
+.constraint i29 i29
+.constraint i30 i30
+.constraint i31 i31
+.constraint i32 i32
+.constraint i33 i33
+.constraint i34 i34
+.constraint i35 i35
+.constraint i36 i36
+.constraint i37 i37
+.constraint i38 i38
+.constraint i39 i39
+.constraint i40 i40

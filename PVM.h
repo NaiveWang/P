@@ -16,7 +16,7 @@
 #include "PFile.h"
 #include "PVMAPILib.h"
 //<<<<<<< Updated upstream
-#define NUM_E_THREAD 2
+#define NUM_E_THREAD 4
 //#define M_WAITING_LIST_SIZE 256
 //#define NUM_E_THREAD 2
 //#define M_WAITING_LIST_SIZE 256
