@@ -1,0 +1,8 @@
+.processor p 1 1 1
+.code
+HALT
+.instance ir p R
+.instance i p S
+.mutex m 12
+.connection m 255 m
+

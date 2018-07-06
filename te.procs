@@ -1,0 +1,7 @@
+.processor p 8 8 8
+.code
+HALT
+.processor pp  1 2 3
+.mutex m 128
+.connection 
+.constraint
