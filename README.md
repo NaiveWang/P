@@ -1,3 +1,5 @@
+[![GitHub license](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://github.com/NaiveWang/P/blob/master/LICENSE)
+
 # P
 A processor-oriented programming language
 
